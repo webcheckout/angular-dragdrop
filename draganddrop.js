@@ -198,6 +198,17 @@
             var customDragLeaveEvent = $parse(attr.onDragLeave);
             var uiOnDragOverFn = $parse(attr.uiOnDragOver);
 
+            let safeApply = function(fn){
+                var phase = this.$root.$$phase;
+                if(phase === '$apply' || phase === '$digest'){
+                    if(fn && (typeof(fn) === 'function')){
+                        fn();
+                    }
+                } else {
+                    this.$apply(fn);
+                }
+            };
+
             function calculateDropOffset(e) {
                 var offset = {
                     x: e.offsetX,
@@ -315,7 +326,7 @@
                 determineEffectAllowed(e);
 
                 var uiOnDropFn = $parse(attr.uiOnDrop);
-                scope.$evalAsync(function() {
+                safeApply(function() {
                     uiOnDropFn(scope, {$data: sendData.data, $event: e, $channel: sendData.channel, $position: position});
                 });
                 element.removeClass(dragEnterClass);

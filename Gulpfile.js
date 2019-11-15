@@ -4,7 +4,7 @@
 /* global require */
 var jshint = require('gulp-jshint');
 var stylish = require('jshint-stylish');
-var uglify = require('gulp-uglify');
+var uglify = require('gulp-uglify-es').default;
 var rename = require('gulp-rename');
 var gulp = require('gulp');
 
@@ -22,4 +22,4 @@ gulp.task('compress', function() {
         .pipe(gulp.dest('./'));
 });
 
-gulp.task('default', ['lint', 'compress']);
+gulp.task('default', gulp.parallel('lint', 'compress'));
