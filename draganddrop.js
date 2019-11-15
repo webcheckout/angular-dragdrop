@@ -40,13 +40,13 @@
             scope.$watch(attrs.uiDraggable, function(newValue) {
                 if (newValue) {
                     element.attr('draggable', newValue);
-                    element.bind('dragend', dragendHandler);
-                    element.bind('dragstart', dragstartHandler);
+                    element.on('dragend', dragendHandler);
+                    element.on('dragstart', dragstartHandler);
                 }
                 else {
                     element.removeAttr('draggable');
-                    element.unbind('dragend', dragendHandler);
-                    element.unbind('dragstart', dragstartHandler);
+                    element.off('dragend', dragendHandler);
+                    element.off('dragstart', dragstartHandler);
                 }
 
             });
@@ -55,7 +55,7 @@
                 isDragHandleUsed = true;
                 dragHandleClass = attrs.dragHandleClass.trim() || 'drag-handle';
 
-                element.bind('mousedown', function(e) {
+                element.on('mousedown', function(e) {
                     dragTarget = e.target;
                 });
             }
@@ -66,7 +66,7 @@
                 }
 
                 setTimeout(function() {
-                    element.unbind('$destroy', dragendHandler);
+                    element.off('$destroy', dragendHandler);
                 }, 0);
                 var sendChannel = attrs.dragChannel || 'defaultchannel';
                 $rootScope.$broadcast('ANGULAR_DRAG_END', e, sendChannel);
@@ -135,7 +135,7 @@
                     var dragImage = attrs.dragImage || null;
 
                     element.addClass(draggingClass);
-                    element.bind('$destroy', dragendHandler);
+                    element.on('$destroy', dragendHandler);
 
                     //Code to make sure that the setDragImage is available. IE 10, 11, and Opera do not support setDragImage.
                     var hasNativeDraggable = !(document.uniqueID || window.opera);
@@ -197,17 +197,6 @@
             var customDragEnterEvent = $parse(attr.onDragEnter);
             var customDragLeaveEvent = $parse(attr.onDragLeave);
             var uiOnDragOverFn = $parse(attr.uiOnDragOver);
-
-            let safeApply = function(fn){
-                var phase = this.$root.$$phase;
-                if(phase === '$apply' || phase === '$digest'){
-                    if(fn && (typeof(fn) === 'function')){
-                        fn();
-                    }
-                } else {
-                    this.$apply(fn);
-                }
-            };
 
             function calculateDropOffset(e) {
                 var offset = {
@@ -326,7 +315,7 @@
                 determineEffectAllowed(e);
 
                 var uiOnDropFn = $parse(attr.uiOnDrop);
-                safeApply(function() {
+                scope.$evalAsync(function() {
                     uiOnDropFn(scope, {$data: sendData.data, $event: e, $channel: sendData.channel, $position: position});
                 });
                 element.removeClass(dragEnterClass);
@@ -378,17 +367,17 @@
                 }
 
                 if (valid) {
-                    element.bind('dragover', onDragOver);
-                    element.bind('dragenter', onDragEnter);
-                    element.bind('dragleave', onDragLeave);
-                    element.bind('drop', onDrop);
+                    element.on('dragover', onDragOver);
+                    element.on('dragenter', onDragEnter);
+                    element.on('dragleave', onDragLeave);
+                    element.on('drop', onDrop);
 
                     element.addClass(dragEnterClass);
                 } else {
-                    element.bind('dragover', preventNativeDnD);
-                    element.bind('dragenter', preventNativeDnD);
-                    element.bind('dragleave', preventNativeDnD);
-                    element.bind('drop', preventNativeDnD);
+                    element.on('dragover', preventNativeDnD);
+                    element.on('dragenter', preventNativeDnD);
+                    element.on('dragleave', preventNativeDnD);
+                    element.on('drop', preventNativeDnD);
 
                     element.removeClass(dragEnterClass);
                 }
@@ -397,18 +386,18 @@
 
 
             var deregisterDragEnd = $rootScope.$on('ANGULAR_DRAG_END', function() {
-                element.unbind('dragover', onDragOver);
-                element.unbind('dragenter', onDragEnter);
-                element.unbind('dragleave', onDragLeave);
+                element.off('dragover', onDragOver);
+                element.off('dragenter', onDragEnter);
+                element.off('dragleave', onDragLeave);
 
-                element.unbind('drop', onDrop);
+                element.off('drop', onDrop);
                 element.removeClass(dragHoverClass);
                 element.removeClass(dragEnterClass);
 
-                element.unbind('dragover', preventNativeDnD);
-                element.unbind('dragenter', preventNativeDnD);
-                element.unbind('dragleave', preventNativeDnD);
-                element.unbind('drop', preventNativeDnD);
+                element.off('dragover', preventNativeDnD);
+                element.off('dragenter', preventNativeDnD);
+                element.off('dragleave', preventNativeDnD);
+                element.off('drop', preventNativeDnD);
             });
 
             scope.$on('$destroy', function() {
