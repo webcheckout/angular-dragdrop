@@ -187,7 +187,7 @@
     }
     ]);
 
-    module.directive('uiOnDrop', ['$parse', '$rootScope', function($parse, $rootScope) {
+    module.directive('uiOnDrop', ['$parse', '$rootScope', '$window', function($parse, $rootScope, $window) {
         return function(scope, element, attr) {
             var dragging = 0; //Ref. http://stackoverflow.com/a/10906204
             var dropChannel = attr.dropChannel || 'defaultchannel';
@@ -197,6 +197,24 @@
             var customDragEnterEvent = $parse(attr.onDragEnter);
             var customDragLeaveEvent = $parse(attr.onDragLeave);
             var uiOnDragOverFn = $parse(attr.uiOnDragOver);
+
+            var scrollThreshold = 20;
+            var scrollIncrement = 100;
+
+            var evaluateForScroll = function(e) {
+              // function is meant to help with scrolling the window
+
+              if (e.clientY < scrollThreshold){
+                //console.log("evaluateForScroll" + e.clientY);
+                $window.scrollBy(0, -scrollIncrement);
+              }
+
+              //console.log(e.clientY, $window.innerHeight);
+              if (e.clientY > ($window.innerHeight - scrollThreshold)){
+                //console.log("bottom threshold");
+                $window.scrollBy(0, scrollIncrement);
+              }
+            };
 
             function calculateDropOffset(e) {
                 var offset = {
@@ -219,6 +237,8 @@
             }
 
             function onDragOver(e) {
+                evaluateForScroll(e);
+
                 if (e.preventDefault) {
                     e.preventDefault(); // Necessary. Allows us to drop.
                 }
